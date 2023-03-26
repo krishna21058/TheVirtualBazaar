@@ -41,8 +41,10 @@ while (True):
         print("------------------- Welcome to the Statistical Section --------------------- ")
         print("\t................. Enter 1. to See the Product Quantity and Product Name's Average by their price in $ ....................")
         print("\t................. Enter 2. to know the Average Price of Products and Category by their Product name and Category Name ....................")
-        print("\t................. Enter 3. to know the Maximum Products Ordered By their Categories....................")
-
+        print("\t................. Enter 3. to know the Maximum Products Ordered By their Categories along with their Category Name and Product Name ....................")
+        print("\t................. Enter 4. to know the to display the Total Revenue, Group by the Category and Product. ......................")
+        print("\t................. Enter 5. to know the Average Cost group by Category Name and Product Name. ......................")
+        print("\t -> Enter:- ")
         input_stats=int(input())
         if(input_stats==1):
             mycursor.execute(f'''SELECT Product_Quantity, NULL AS Product_name, ROUND(AVG(Product_price_in$),2)
@@ -88,7 +90,37 @@ while (True):
             
             myresult = mycursor.fetchall()
             for row in myresult:
-                print(row  
+                print(row)
+
+        
+        elif(input_stats==4):
+            mycursor.execute(f'''SELECT 
+                                IF(GROUPING(c.category_name), 'All Categories', c.category_name) AS Category, 
+                                IF(GROUPING(p.product_name), 'All Categories', p.product_name) AS Product, 
+                                ROUND(SUM(o.total_charges),2) AS Total_Revenue
+                                FROM final_order AS o
+                                INNER JOIN store AS s ON s.store_product_id = o.order_product_id
+                                INNER JOIN product AS p ON p.product_id = s.store_product_id
+                                INNER JOIN category AS c ON p.product_category_id = c.category_id
+                                GROUP BY c.category_name,p.product_name WITH ROLLUP;
+                                ''')
+            
+            myresult = mycursor.fetchall()
+            for row in myresult:
+                print(row)
+
+        elif(input_stats==5):
+            mycursor.execute(f'''SELECT  
+                                IF(GROUPING(c.category_name), 'All Categories ', c.category_name) AS Category_Name, 
+                                IF(GROUPING(p.product_name), 'All Products', p.product_name) AS Product_Name,
+                                ROUND(AVG(p.product_price_in$ *(1-(p.product_discount/100))),2) AS Avg_Cost
+                                FROM product AS p INNER JOIN category AS c ON c.category_id = p.product_category_id
+                                GROUP BY p.product_name,c.category_name WITH ROLLUP;
+                                ''')
+            
+            myresult = mycursor.fetchall()
+            for row in myresult:
+                print(row)
 
 
 
@@ -328,5 +360,3 @@ while (True):
                 myresult = mycursor.fetchall()
                 for row in myresult:
                     print(row)
-                print()
-                
