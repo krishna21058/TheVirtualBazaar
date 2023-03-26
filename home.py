@@ -1,5 +1,6 @@
 import mysql.connector
 from datetime import date
+from tabulate import tabulate
 
 
 mydb = mysql.connector.connect(
@@ -37,16 +38,17 @@ while (True):
             f"INSERT INTO Login(Login_username,password,login_type) VALUES('{inp_signup_username}','{inp_signup_pass}','{inp_signup_logintype}')")
         mydb.commit()
 
-    elif(inp_home==3):
-        print("------------------- Welcome to the Statistical Section --------------------- ")
+    elif (inp_home == 3):
+        print(
+            "------------------- Welcome to the Statistical Section --------------------- ")
         print("\t................. Enter 1. to See the Product Quantity and Product Name's Average by their price in $ ....................")
         print("\t................. Enter 2. to know the Average Price of Products and Category by their Product name and Category Name ....................")
         print("\t................. Enter 3. to know the Maximum Products Ordered By their Categories along with their Category Name and Product Name ....................")
         print("\t................. Enter 4. to know the to display the Total Revenue, Group by the Category and Product. ......................")
         print("\t................. Enter 5. to know the Average Cost group by Category Name and Product Name. ......................")
         print("\t -> Enter:- ")
-        input_stats=int(input())
-        if(input_stats==1):
+        input_stats = int(input())
+        if (input_stats == 1):
             mycursor.execute(f'''SELECT Product_Quantity, NULL AS Product_name, ROUND(AVG(Product_price_in$),2)
                                 FROM Product
                                 GROUP BY Product_Quantity
@@ -55,16 +57,16 @@ while (True):
                                 FROM Product
                                 GROUP BY Product_name;
                                 ''')
-            
+
             myresult = mycursor.fetchall()
             for row in myresult:
                 print(row)
 
-                                # Print the column headers
+                # Print the column headers
             # print("Orders_from\tAge_Group\tNumber_Of_Orders")
 
-                                # Print each row of the result
-        elif(input_stats==2):
+                # Print each row of the result
+        elif (input_stats == 2):
             mycursor.execute(f'''SELECT  
                                 IF(GROUPING(c.category_name), 'All Categories ', c.category_name) AS Category_Name, 
                                 IF(GROUPING(p.product_name), 'All Products', p.product_name) AS Product_Name,
@@ -72,28 +74,30 @@ while (True):
                                 FROM product AS p INNER JOIN category AS c ON c.category_id = p.product_category_id
                                 GROUP BY p.product_name,c.category_name WITH ROLLUP;
                                 ''')
-            
+
             myresult = mycursor.fetchall()
             for row in myresult:
                 print(row)
 
-        elif(input_stats==3):
+        elif (input_stats == 3):
             mycursor.execute(f'''SELECT
-                                IF(GROUPING(c.category_name), 'All Categories', c.category_name) AS Category_Name,
-                                IF(GROUPING(p.product_name), 'All Products', p.product_name) AS Product_Name,
-                                COUNT(o.order_id) AS Number_Of_Orders
-                                FROM final_order AS o
-                                INNER JOIN product AS p ON p.product_id = o.order_product_id
-                                LEFT JOIN category AS c ON c.category_id = p.product_category_id
-                                GROUP BY c.category_name, p.product_name WITH ROLLUP;
+                            IF(GROUPING(c.category_name), 'All Categories', c.category_name) AS Category_Name,
+                            IF(GROUPING(p.product_name), 'All Products', p.product_name) AS Product_Name,
+                            COUNT(o.order_id) AS Number_Of_Orders
+                        FROM final_order AS o
+                        INNER JOIN product AS p ON p.product_id = o.order_product_id
+                        INNER JOIN category AS c ON c.category_id = p.product_category_id
+                        GROUP BY c.category_name, p.product_name WITH ROLLUP; 
+                        GROUP BY c.category_name, p.product_name WITH ROLLUP; 
                                 ''')
-            
+ 
             myresult = mycursor.fetchall()
-            for row in myresult:
-                print(row)
+            result_list = [("Category Name", "Product Name", "Number Of Orders")]
+            result_list+=[(" "," "," ")]
+            result_list += [tuple(row) for row in myresult]
+            print(tabulate(result_list))
 
-        
-        elif(input_stats==4):
+        elif (input_stats == 4):
             mycursor.execute(f'''SELECT 
                                 IF(GROUPING(c.category_name), 'All Categories', c.category_name) AS Category, 
                                 IF(GROUPING(p.product_name), 'All Categories', p.product_name) AS Product, 
@@ -104,12 +108,12 @@ while (True):
                                 INNER JOIN category AS c ON p.product_category_id = c.category_id
                                 GROUP BY c.category_name,p.product_name WITH ROLLUP;
                                 ''')
-            
+
             myresult = mycursor.fetchall()
             for row in myresult:
                 print(row)
 
-        elif(input_stats==5):
+        elif (input_stats == 5):
             mycursor.execute(f'''SELECT  
                                 IF(GROUPING(c.category_name), 'All Categories ', c.category_name) AS Category_Name, 
                                 IF(GROUPING(p.product_name), 'All Products', p.product_name) AS Product_Name,
@@ -117,13 +121,10 @@ while (True):
                                 FROM product AS p INNER JOIN category AS c ON c.category_id = p.product_category_id
                                 GROUP BY p.product_name,c.category_name WITH ROLLUP;
                                 ''')
-            
+
             myresult = mycursor.fetchall()
             for row in myresult:
                 print(row)
-
-
-
 
     elif (inp_home == 2):
         print(">>>>>>>>>>>>>>>>>> Please Enter Your Details to Complete the LogIn <<<<<<<<<<<<<<<<<<<<<<<")
@@ -176,13 +177,15 @@ while (True):
                     print()
                     rep = 0
                     mode = 0
-                    while (mode != 1 and mode != 2 and mode != 3 and mode!=4):
+                    while (mode != 1 and mode != 2 and mode != 3 and mode != 4):
                         if (rep >= 1):
-                            print("!!!!!!!!!!!!!!!!!!!! Invalid Entry !!!!!!!!!!!!!!!!!!")
+                            print(
+                                "!!!!!!!!!!!!!!!!!!!! Invalid Entry !!!!!!!!!!!!!!!!!!")
                             print("Choose what you want to see or edit")
 
                         print("\tEnter 1 if you want to view Products.\n")
-                        print("\tEnter 2 if you want to Add a product to the Cart or Wants to view Your Cart\n")
+                        print(
+                            "\tEnter 2 if you want to Add a product to the Cart or Wants to view Your Cart\n")
                         print("\tEnter 3 if you want to place the Order.\n")
                         print("\tEnter 4 if you want to see our minimum prices.\n")
                         rep = rep+1
@@ -196,8 +199,8 @@ while (True):
                             for x in myresult:
                                 print(x)
 
-                    
-                        elif (mode == 2):    # this is for adding/viewing the cart.
+                        # this is for adding/viewing the cart.
+                        elif (mode == 2):
                             print(
                                 "------------ Do You Want to Add a Product to the Cart Or Wants to see the Cart? -------------- \n")
                             op = 0
@@ -253,7 +256,8 @@ while (True):
                                 for x in myresult:
                                     print(x)
 
-                        elif (mode==4):           # this is to see Our Minimum Prices.
+                        # this is to see Our Minimum Prices.
+                        elif (mode == 4):
                             print("")
                             mycursor.execute(f'''SELECT 
                                             IF(GROUPING(p.product_name), 'All Products', p.product_name) AS Product_Name,
@@ -269,12 +273,13 @@ while (True):
                             # Print each row of the result
                             for row in myresult:
                                 print(row)
-                                
 
             elif (inp_signup_logintype == "Retailer"):
 
-                print("------------------ You've Logged-IN as a Retailer -------------------\n")
-                print(">>>>>>>>>>>>>>>>>> Kindly give the below details. <<<<<<<<<<<<<<<<<<<<<<\n")
+                print(
+                    "------------------ You've Logged-IN as a Retailer -------------------\n")
+                print(
+                    ">>>>>>>>>>>>>>>>>> Kindly give the below details. <<<<<<<<<<<<<<<<<<<<<<\n")
                 print("-> Enter your First Name:- ")
                 inp_retailer_fn = input()
                 print("-> Enter your Last Name:- ")
@@ -299,7 +304,8 @@ while (True):
 
                 retailer = 0
                 print("     ->Enter 1. to Add Products to the Store.")
-                print("     ->Enter 2. to See the Customers Statistics For a particular Product ID.")
+                print(
+                    "     ->Enter 2. to See the Customers Statistics For a particular Product ID.")
 
                 retailer = int(input())
                 if (retailer == 1):
@@ -348,10 +354,11 @@ while (True):
                             print(f"{row[0]}\t{row[1]}\t{row[2]}")
 
             elif (inp_signup_logintype == "Delivery Person"):
-                
+
                 print(
                     "------------------ You've Logged-IN as a Delivery Person -------------------\n")
-                print(">>>>>>>>>>>>>>>>>> Kindly Enter the Product ID in Order to see the Delivery Date. <<<<<<<<<<<<<<<<<<<")
+                print(
+                    ">>>>>>>>>>>>>>>>>> Kindly Enter the Product ID in Order to see the Delivery Date. <<<<<<<<<<<<<<<<<<<")
                 print("\t-> Please Enter Your Order ID.")
                 order_id = int(input())
                 mycursor.execute(
