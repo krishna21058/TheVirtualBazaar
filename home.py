@@ -59,8 +59,10 @@ while (True):
                                 ''')
 
             myresult = mycursor.fetchall()
-            for row in myresult:
-                print(row)
+            result_list = [("Product Quantity", "Product Name", "Average Product Price in $")]
+            result_list+=[(" "," "," ")]
+            result_list += [tuple(row) for row in myresult]
+            print(tabulate(result_list))
 
                 # Print the column headers
             # print("Orders_from\tAge_Group\tNumber_Of_Orders")
@@ -76,8 +78,10 @@ while (True):
                                 ''')
 
             myresult = mycursor.fetchall()
-            for row in myresult:
-                print(row)
+            result_list = [("Category Name", "Product Name", "Average Cost")]
+            result_list+=[(" "," "," ")]
+            result_list += [tuple(row) for row in myresult]
+            print(tabulate(result_list))
 
         elif (input_stats == 3):
             mycursor.execute(f'''SELECT
@@ -110,8 +114,10 @@ while (True):
                                 ''')
 
             myresult = mycursor.fetchall()
-            for row in myresult:
-                print(row)
+            result_list = [("Category ", "Product ", "Total Revenue")]
+            result_list+=[(" "," "," ")]
+            result_list += [tuple(row) for row in myresult]
+            print(tabulate(result_list))
 
         elif (input_stats == 5):
             mycursor.execute(f'''SELECT  
@@ -123,8 +129,10 @@ while (True):
                                 ''')
 
             myresult = mycursor.fetchall()
-            for row in myresult:
-                print(row)
+            result_list = [("Category Name ", "Product Name ", "Average Cost")]
+            result_list+=[(" "," "," ")]
+            result_list += [tuple(row) for row in myresult]
+            print(tabulate(result_list))
 
     elif (inp_home == 2):
         print(">>>>>>>>>>>>>>>>>> Please Enter Your Details to Complete the LogIn <<<<<<<<<<<<<<<<<<<<<<<")
@@ -138,6 +146,9 @@ while (True):
             f"SELECT Login_ID FROM Login WHERE Login_username = '{inp_signin_username}' AND Password='{inp_signin_pass}' AND Login_Type='{inp_signup_logintype}'")
 
         result = mycursor.fetchone()
+        if not result:
+            print("Account doesn't exist. Kindly SignUp first.")
+            continue
         login_id = result[0]
         mycursor.fetchall()
         exists = bool(result)
@@ -194,10 +205,12 @@ while (True):
 
                         if (mode == 1):  # this is for viewing product.
                             print("---------- Below is the Products List ---------")
-                            mycursor.execute("SELECT * FROM Product")
+                            mycursor.execute("SELECT * FROM Product;")
                             myresult = mycursor.fetchall()
-                            for x in myresult:
-                                print(x)
+                            result_list = [("Product ID", "Product Category ID", "Product Price in $", "Product Name", "Product Discount", "Product Quantity")]
+                            result_list+=[(" "," "," "," "," "," ")]
+                            result_list += [tuple(row) for row in myresult]
+                            print(tabulate(result_list))
 
                         # this is for adding/viewing the cart.
                         elif (mode == 2):
@@ -221,10 +234,12 @@ while (True):
                                         "---------- Below is the Cart List ---------")
 
                                     mycursor.execute(
-                                        f"SELECT * FROM Cart WHERE cart_Customer_ID={cust_id}")
+                                        f"SELECT * FROM Cart WHERE cart_Customer_ID={cust_id};")
                                     myresult = mycursor.fetchall()
-                                    for x in myresult:
-                                        print(x)
+                                    result_list = [("Cart product ID", "Cart Customer ID", "Cart Product Quantity")]
+                                    result_list+=[(" "," "," ")]
+                                    result_list += [tuple(row) for row in myresult]
+                                    print(tabulate(result_list))
 
                                 elif (op == 2):
                                     print(
@@ -266,13 +281,10 @@ while (True):
                                             GROUP BY p.product_name WITH ROLLUP;
                                                 ''')
                             myresult = mycursor.fetchall()
-
-                            # Print the column headers
-                            # print("Orders_from\tAge_Group\tNumber_Of_Orders")
-
-                            # Print each row of the result
-                            for row in myresult:
-                                print(row)
+                            result_list = [("Cart product ID", "Minimum Cost after Discount in $")]
+                            result_list+=[(" "," ")]
+                            result_list += [tuple(row) for row in myresult]
+                            print(tabulate(result_list))
 
             elif (inp_signup_logintype == "Retailer"):
 
@@ -341,17 +353,14 @@ while (True):
                                                 FROM final_order AS o
                                                 INNER JOIN customer AS c ON c.customer_id=o.order_customer_id
                                                 INNER JOIN store AS s ON s.store_product_id=o.order_product_id
-                                                WHERE s.store_retailer_id={ret_id}
-                                                GROUP BY c.state, c.age WITH ROLLUP
+                                                WHERE s.store_retailer_id=2
+                                                GROUP BY c.state, c.age WITH ROLLUP;
                                                 ''')
                         myresult = mycursor.fetchall()
-
-                        # Print the column headers
-                        print("Orders_from\tAge_Group\tNumber_Of_Orders")
-
-                        # Print each row of the result
-                        for row in myresult:
-                            print(f"{row[0]}\t{row[1]}\t{row[2]}")
+                        result_list = [("orders From", "Age Group","Number of Orders")]
+                        result_list+=[(" "," "," ")]
+                        result_list += [tuple(row) for row in myresult]
+                        print(tabulate(result_list))
 
             elif (inp_signup_logintype == "Delivery Person"):
 
@@ -362,8 +371,10 @@ while (True):
                 print("\t-> Please Enter Your Order ID.")
                 order_id = int(input())
                 mycursor.execute(
-                    f"SELECT delivery_customer_id, date from Delivery where Delivery_Order_ID={order_id}")
+                    f"SELECT delivery_customer_id, date from Delivery where Delivery_Order_ID={order_id};")
 
                 myresult = mycursor.fetchall()
-                for row in myresult:
-                    print(row)
+                result_list = [("Delivery Customer ID", "Date")]
+                result_list+=[(" "," ")]
+                result_list += [tuple(row) for row in myresult]
+                print(tabulate(result_list))
