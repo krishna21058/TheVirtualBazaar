@@ -18,8 +18,10 @@ while (True):
     print("\tEnter 1. to Sign Up")
     print("\tEnter 2. to Login")
     print("\tEnter 3. See Some Statistics")
+    print("\tEnter 4. See All Products")
 
     inp_home = int(input())
+
     if (inp_home == 1):
         print(">>>>>>>>>>>>>>>>>> Please Enter Your Details to Complete the SignUp <<<<<<<<<<<<<<<<<<<<<<<")
         print("-> Enter Your Username:- ")
@@ -37,18 +39,27 @@ while (True):
         mycursor.execute(
             f"INSERT INTO Login(Login_username,password,login_type) VALUES('{inp_signup_username}','{inp_signup_pass}','{inp_signup_logintype}')")
         mydb.commit()
+    elif(inp_home==4):
+        print("---------- Below is the Products List ---------")
+        mycursor.execute("SELECT * FROM Product;")
+        myresult = mycursor.fetchall()
+        result_list = [("Product ID", "Product Category ID", "Product Price in $",
+                                            "Product Name", "Product Discount", "Product Quantity")]
+        result_list += [(" ", " ", " ", " ", " ", " ")]
+        result_list += [tuple(row) for row in myresult]
+        print(tabulate(result_list))
 
     elif (inp_home == 3):
         print(
             "------------------- Welcome to the Statistical Section --------------------- ")
-        print("\t................. Enter 1. to See the Product Quantity and Product Name's Average by their price in $ ....................")
-        print("\t................. Enter 2. to know the Average Price of Products and Category by their Product name and Category Name ....................")
-        print("\t................. Enter 3. to know the Maximum Products Ordered By their Categories along with their Category Name and Product Name ....................")
+        print("\t................. Enter 1. to know the Average Price of Products and Category by their Product name and Category Name ....................")
+        print("\t................. Enter 2. to know the Maximum Products Ordered By their Categories along with their Category Name and Product Name ....................")
+        print("\t................. Enter 3. to know the Average Cost group by Category Name and Product Name. ......................")
         print("\t................. Enter 4. to know the to display the Total Revenue, Group by the Category and Product. ......................")
-        print("\t................. Enter 5. to know the Average Cost group by Category Name and Product Name. ......................")
+        print("\t................. Enter 5. to See the Product Quantity and Product Name's Average by their price in $ ....................")
         print("\t -> Enter:- ")
         input_stats = int(input())
-        if (input_stats == 1):
+        if (input_stats == 5):
             mycursor.execute(f'''SELECT Product_Quantity, NULL AS Product_name, ROUND(AVG(Product_price_in$),2)
                                 FROM Product
                                 GROUP BY Product_Quantity
@@ -59,16 +70,13 @@ while (True):
                                 ''')
 
             myresult = mycursor.fetchall()
-            result_list = [("Product Quantity", "Product Name", "Average Product Price in $")]
-            result_list+=[(" "," "," ")]
+            result_list = [("Product Quantity", "Product Name",
+                            "Average Product Price in $")]
+            result_list += [(" ", " ", " ")]
             result_list += [tuple(row) for row in myresult]
             print(tabulate(result_list))
 
-                # Print the column headers
-            # print("Orders_from\tAge_Group\tNumber_Of_Orders")
-
-                # Print each row of the result
-        elif (input_stats == 2):
+        elif (input_stats == 1):
             mycursor.execute(f'''SELECT  
                                 IF(GROUPING(c.category_name), 'All Categories ', c.category_name) AS Category_Name, 
                                 IF(GROUPING(p.product_name), 'All Products', p.product_name) AS Product_Name,
@@ -79,11 +87,11 @@ while (True):
 
             myresult = mycursor.fetchall()
             result_list = [("Category Name", "Product Name", "Average Cost")]
-            result_list+=[(" "," "," ")]
+            result_list += [(" ", " ", " ")]
             result_list += [tuple(row) for row in myresult]
             print(tabulate(result_list))
 
-        elif (input_stats == 3):
+        elif (input_stats == 2):
             mycursor.execute(f'''SELECT
                             IF(GROUPING(c.category_name), 'All Categories', c.category_name) AS Category_Name,
                             IF(GROUPING(p.product_name), 'All Products', p.product_name) AS Product_Name,
@@ -92,34 +100,35 @@ while (True):
                         INNER JOIN product AS p ON p.product_id = o.order_product_id
                         INNER JOIN category AS c ON c.category_id = p.product_category_id
                         GROUP BY c.category_name, p.product_name WITH ROLLUP; 
-                        GROUP BY c.category_name, p.product_name WITH ROLLUP; 
+                        
                                 ''')
- 
+
             myresult = mycursor.fetchall()
-            result_list = [("Category Name", "Product Name", "Number Of Orders")]
-            result_list+=[(" "," "," ")]
+            result_list = [
+                ("Category Name", "Product Name", "Number Of Orders")]
+            result_list += [(" ", " ", " ")]
             result_list += [tuple(row) for row in myresult]
             print(tabulate(result_list))
 
         elif (input_stats == 4):
             mycursor.execute(f'''SELECT 
-                                IF(GROUPING(c.category_name), 'All Categories', c.category_name) AS Category, 
-                                IF(GROUPING(p.product_name), 'All Categories', p.product_name) AS Product, 
-                                ROUND(SUM(o.total_charges),2) AS Total_Revenue
-                                FROM final_order AS o
-                                INNER JOIN store AS s ON s.store_product_id = o.order_product_id
-                                INNER JOIN product AS p ON p.product_id = s.store_product_id
-                                INNER JOIN category AS c ON p.product_category_id = c.category_id
-                                GROUP BY c.category_name,p.product_name WITH ROLLUP;
-                                ''')
+                        IF(GROUPING(c.category_name), 'All Categories', c.category_name) AS Category, 
+                        IF(GROUPING(p.product_name), 'All Categories', p.product_name) AS Product, 
+                        ROUND(SUM(o.total_charges),2) AS Total_Revenue
+                    FROM final_order AS o
+                    INNER JOIN store AS s ON s.store_product_id = o.order_product_id
+                    INNER JOIN product AS p ON p.product_id = s.store_product_id
+                    INNER JOIN category AS c ON p.product_category_id = c.category_id
+                    GROUP BY c.category_name,p.product_name WITH ROLLUP;
+                    ''')
 
             myresult = mycursor.fetchall()
             result_list = [("Category ", "Product ", "Total Revenue")]
-            result_list+=[(" "," "," ")]
+            result_list += [(" ", " ", " ")]
             result_list += [tuple(row) for row in myresult]
             print(tabulate(result_list))
 
-        elif (input_stats == 5):
+        elif (input_stats == 3):
             mycursor.execute(f'''SELECT  
                                 IF(GROUPING(c.category_name), 'All Categories ', c.category_name) AS Category_Name, 
                                 IF(GROUPING(p.product_name), 'All Products', p.product_name) AS Product_Name,
@@ -130,7 +139,7 @@ while (True):
 
             myresult = mycursor.fetchall()
             result_list = [("Category Name ", "Product Name ", "Average Cost")]
-            result_list+=[(" "," "," ")]
+            result_list += [(" ", " ", " ")]
             result_list += [tuple(row) for row in myresult]
             print(tabulate(result_list))
 
@@ -183,12 +192,12 @@ while (True):
                 c_id = mycursor.fetchone()
                 cust_id = c_id[0]
                 mycursor.fetchall()
-                while (mode != 4):
+                while (mode != 5):
                     print("Choose what you want to see or edit")
                     print()
                     rep = 0
                     mode = 0
-                    while (mode != 1 and mode != 2 and mode != 3 and mode != 4):
+                    while (mode != 1 and mode != 2 and mode != 3 and mode != 4 and mode!=5):
                         if (rep >= 1):
                             print(
                                 "!!!!!!!!!!!!!!!!!!!! Invalid Entry !!!!!!!!!!!!!!!!!!")
@@ -198,7 +207,8 @@ while (True):
                         print(
                             "\tEnter 2 if you want to Add a product to the Cart or Wants to view Your Cart\n")
                         print("\tEnter 3 if you want to place the Order.\n")
-                        print("\tEnter 4 if you want to see our minimum prices.\n")
+                        print("\tEnter 4 if you want to check delivery details.\n")
+                        print("\tEnter 5 if you want to see our minimum prices.\n")
                         rep = rep+1
                         print("-> Enter:- ")
                         mode = int(input())
@@ -207,8 +217,9 @@ while (True):
                             print("---------- Below is the Products List ---------")
                             mycursor.execute("SELECT * FROM Product;")
                             myresult = mycursor.fetchall()
-                            result_list = [("Product ID", "Product Category ID", "Product Price in $", "Product Name", "Product Discount", "Product Quantity")]
-                            result_list+=[(" "," "," "," "," "," ")]
+                            result_list = [("Product ID", "Product Category ID", "Product Price in $",
+                                            "Product Name", "Product Discount", "Product Quantity")]
+                            result_list += [(" ", " ", " ", " ", " ", " ")]
                             result_list += [tuple(row) for row in myresult]
                             print(tabulate(result_list))
 
@@ -236,9 +247,11 @@ while (True):
                                     mycursor.execute(
                                         f"SELECT * FROM Cart WHERE cart_Customer_ID={cust_id};")
                                     myresult = mycursor.fetchall()
-                                    result_list = [("Cart product ID", "Cart Customer ID", "Cart Product Quantity")]
-                                    result_list+=[(" "," "," ")]
-                                    result_list += [tuple(row) for row in myresult]
+                                    result_list = [
+                                        ("Cart product ID", "Cart Customer ID", "Cart Product Quantity")]
+                                    result_list += [(" ", " ", " ")]
+                                    result_list += [tuple(row)
+                                                    for row in myresult]
                                     print(tabulate(result_list))
 
                                 elif (op == 2):
@@ -248,31 +261,49 @@ while (True):
                                     inp_prodid = int(input())
 
                                     inp_prodquant = int(input())
-                                    mycursor.execute(
-                                        f"INSERT INTO Cart(Cart_Product_ID, Cart_Customer_ID, Cart_product_quantity) VALUES ({inp_prodid},{cust_id},{inp_prodquant})")
-                                    print(
-                                        "------------- Data Have Been SUCCESSFULLY Added. ---------------")
-                                    mydb.commit()
+                                    try:
+                                        mycursor.execute(
+                                            f"INSERT INTO Cart(Cart_Product_ID, Cart_Customer_ID, Cart_product_quantity) VALUES ({inp_prodid},{cust_id},{inp_prodquant})")
+                                        print(
+                                            "------------- Data Have Been SUCCESSFULLY Added. ---------------")
+                                        mydb.commit()
+                                    except:
+                                        print(
+                                            "!!!!!!!!!!!!!!!!!!!!!!  Product is out of stock !!!!!!!!!!!!!!!!!!!!")
 
                         elif (mode == 3):  # this is for placing the Order
                             print(
                                 ":::::::::::::::: If you're DONE with shopping then kindly follow the below steps in order to place the Order ::::::::::::::::::")
                             print("\t Enter 1 to place the Order.")
                             print(
-                                "\t Enter 2 If you don't want to place the Order and wants to exit without making any payment.")
+                                "\t Enter 2 If you want to go back.")
                             place = int(input())
                             if (place == 1):
                                 print(
                                     "//////////////////////////////// THANKS SO MUCH FOR SHOPPING AT THE VIRTUAL BAZAAR //////////////////////////////////")
 
                                 mycursor.execute(
-                                    f"INSERT INTO Final_Order(Order_Customer_id,Order_product_id, Total_Charges, Ordered_date) VALUES ({cust_id},{inp_prodid},10.5,'{date.today()}')")
-                                myresult = mycursor.fetchall()
-                                for x in myresult:
-                                    print(x)
+                                    f"INSERT INTO Final_Order(Order_Customer_id,Order_product_id, Total_Charges, Ordered_date) VALUES ({cust_id},{inp_prodid},10.5,'2023-03-26')")
+                                mydb.commit()
+                                mycursor.execute(
+                                    f"DELETE from cart where cart_customer_id={cust_id}")
+                                mydb.commit()
+                                # myresult = mycursor.fetchall()
+                                # for x in myresult:
+                                #     print(x)
+
+                        elif (mode == 4):
+                            mycursor.execute(
+                                f"SELECT* FROM Delivery WHERE Delivery_Customer_ID={cust_id}")
+                            myresult = mycursor.fetchall()
+                            result_list = [
+                                ("Delivery Person ID", "Delivery Customer ID", "Delivery Order ID", "Delivery Date")]
+                            result_list += [(" ", " ", " ", " ")]
+                            result_list += [tuple(row) for row in myresult]
+                            print(tabulate(result_list))
 
                         # this is to see Our Minimum Prices.
-                        elif (mode == 4):
+                        elif (mode == 5):
                             print("")
                             mycursor.execute(f'''SELECT 
                                             IF(GROUPING(p.product_name), 'All Products', p.product_name) AS Product_Name,
@@ -281,8 +312,9 @@ while (True):
                                             GROUP BY p.product_name WITH ROLLUP;
                                                 ''')
                             myresult = mycursor.fetchall()
-                            result_list = [("Cart product ID", "Minimum Cost after Discount in $")]
-                            result_list+=[(" "," ")]
+                            result_list = [
+                                ("Cart product ID", "Minimum Cost after Discount in $")]
+                            result_list += [(" ", " ")]
                             result_list += [tuple(row) for row in myresult]
                             print(tabulate(result_list))
 
@@ -317,7 +349,7 @@ while (True):
                 retailer = 0
                 print("     ->Enter 1. to Add Products to the Store.")
                 print(
-                    "     ->Enter 2. to See the Customers Statistics For a particular Product ID.")
+                    "     ->Enter 2. to See the Customers Statistics For Retailer ID=2 (or for any other retailer_id).")
 
                 retailer = int(input())
                 if (retailer == 1):
@@ -342,10 +374,7 @@ while (True):
                     mydb.commit()
 
                 elif (retailer == 2):
-                    print(
-                        ">>>>>>>>>>>>> Enter 1 To See the Customers Statistics For a particular Product ID. <<<<<<<<<<<<<")
-                    input_R = int(input("\t->Enter:- "))
-                    if (input_R == 1):
+
                         mycursor.execute(f'''SELECT
                                                 IF(GROUPING(c.state), 'All states', c.state) AS Orders_from,
                                                 IF(GROUPING(c.age), 'All Age Groups', CONCAT(FLOOR(c.age/10)*10, '-', FLOOR(c.age/10)*10+9)) AS Age_Group,
@@ -357,8 +386,9 @@ while (True):
                                                 GROUP BY c.state, c.age WITH ROLLUP;
                                                 ''')
                         myresult = mycursor.fetchall()
-                        result_list = [("orders From", "Age Group","Number of Orders")]
-                        result_list+=[(" "," "," ")]
+                        result_list = [
+                            ("orders From", "Age Group", "Number of Orders")]
+                        result_list += [(" ", " ", " ")]
                         result_list += [tuple(row) for row in myresult]
                         print(tabulate(result_list))
 
@@ -375,6 +405,6 @@ while (True):
 
                 myresult = mycursor.fetchall()
                 result_list = [("Delivery Customer ID", "Date")]
-                result_list+=[(" "," ")]
+                result_list += [(" ", " ")]
                 result_list += [tuple(row) for row in myresult]
                 print(tabulate(result_list))
