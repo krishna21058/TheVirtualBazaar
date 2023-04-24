@@ -34,7 +34,10 @@ while (True):
                 "!!!!!!!!!!!!!!!!!!!!!!!! Password should have length of 5 or more! !!!!!!!!!!!!!!!!!!!!!!!!!!")
             break
 
+        print("\n$$$$$$$$$$$$$$$$$$ You can log in as either Customer or Retailer or Delivery Person $$$$$$$$$$$$$$$$$$ \n")
+
         print("-> Enter Your Login Type:- ")
+
         inp_signup_logintype = input()
         print()
         mycursor.execute(
@@ -102,6 +105,37 @@ while (True):
                 f"INSERT INTO Retailer(FirstName, LastName, Age, Address, Phone, RLogin_ID) VALUES('{inp_retailer_fn}', '{inp_retailer_ln}', {inp_retailer_age},'{inp_retailer_addr}', {inp_retailer_phone}, {login_id})"
             )
             mydb.commit()
+        elif (inp_signup_logintype == "Delivery Person"):
+            print(
+                "------------------ You've Logged-IN as a Delivery Person -------------------\n")
+            print(
+                ">>>>>>>>>>>>>>>>>> Kindly give the below details. <<<<<<<<<<<<<<<<<<<<<<\n")
+            print("-> Enter your First Name:- ")
+            inp_retailer_fn = input()
+            print("-> Enter your Last Name:- ")
+            inp_retailer_ln = input()
+            print("-> Enter your Age:- ")
+            inp_retailer_age = input()
+            print("-> Enter your Gender:- ")
+            inp_retailer_gender = input()
+            print("-> Enter your Address:- ")
+            inp_retailer_addr = input()
+            print("-> Enter your Phone Number:- ")
+            inp_retailer_phone = input()
+            mycursor.execute( 
+                f"SELECT Login_ID FROM Login WHERE Login_username = '{inp_signup_username}' AND Password='{inp_signup_pass}' AND Login_Type='{inp_signup_logintype}'")
+
+            result = mycursor.fetchone()
+            if not result:
+                print("Account doesn't exist. Kindly SignUp first.")
+                continue
+            login_id = result[0]
+            mycursor.fetchall()
+
+            mycursor.execute(
+                f"INSERT INTO Delivery_Person(FirstName, LastName, Age, Gender,Address, Phone, DLogin_ID) VALUES('{inp_retailer_fn}', '{inp_retailer_ln}', {inp_retailer_age},'{inp_retailer_addr}','{inp_retailer_gender}', {inp_retailer_phone}, {login_id})"
+            )
+            mydb.commit()
 
     elif (inp_home == 4):
         print("---------- Below is the Products List ---------")
@@ -141,8 +175,8 @@ while (True):
             print(tabulate(result_list))
 
         elif (input_stats == 1):
-            mycursor.execute(f'''SELECT  
-                                IF(GROUPING(c.category_name), 'All Categories ', c.category_name) AS Category_Name, 
+            mycursor.execute(f'''SELECT
+                                IF(GROUPING(c.category_name), 'All Categories ', c.category_name) AS Category_Name,
                                 IF(GROUPING(p.product_name), 'All Products', p.product_name) AS Product_Name,
                                 ROUND(AVG(p.product_price_in$ *(1-(p.product_discount/100))),2) AS Avg_Cost
                                 FROM product AS p INNER JOIN category AS c ON c.category_id = p.product_category_id
@@ -163,8 +197,8 @@ while (True):
                         FROM final_order AS o
                         INNER JOIN product AS p ON p.product_id = o.order_product_id
                         INNER JOIN category AS c ON c.category_id = p.product_category_id
-                        GROUP BY c.category_name, p.product_name WITH ROLLUP; 
-                        
+                        GROUP BY c.category_name, p.product_name WITH ROLLUP;
+
                                 ''')
 
             myresult = mycursor.fetchall()
@@ -175,9 +209,9 @@ while (True):
             print(tabulate(result_list))
 
         elif (input_stats == 4):
-            mycursor.execute(f'''SELECT 
-                        IF(GROUPING(c.category_name), 'All Categories', c.category_name) AS Category, 
-                        IF(GROUPING(p.product_name), 'All Categories', p.product_name) AS Product, 
+            mycursor.execute(f'''SELECT
+                        IF(GROUPING(c.category_name), 'All Categories', c.category_name) AS Category,
+                        IF(GROUPING(p.product_name), 'All Categories', p.product_name) AS Product,
                         ROUND(SUM(o.total_charges),2) AS Total_Revenue
                     FROM final_order AS o
                     INNER JOIN store AS s ON s.store_product_id = o.order_product_id
@@ -193,8 +227,8 @@ while (True):
             print(tabulate(result_list))
 
         elif (input_stats == 3):
-            mycursor.execute(f'''SELECT  
-                                IF(GROUPING(c.category_name), 'All Categories ', c.category_name) AS Category_Name, 
+            mycursor.execute(f'''SELECT
+                                IF(GROUPING(c.category_name), 'All Categories ', c.category_name) AS Category_Name,
                                 IF(GROUPING(p.product_name), 'All Products', p.product_name) AS Product_Name,
                                 ROUND(AVG(p.product_price_in$ *(1-(p.product_discount/100))),2) AS Avg_Cost
                                 FROM product AS p INNER JOIN category AS c ON c.category_id = p.product_category_id
@@ -234,12 +268,15 @@ while (True):
                 c_id = mycursor.fetchone()
                 cust_id = c_id[0]
                 mycursor.fetchall()
+                quant = 0
+                prod_quant = 0
                 while (mode != 5):
                     print("Choose what you want to see or edit")
                     print()
                     rep = 0
                     mode = 0
-                    while (mode != 1 and mode != 2 and mode != 3 and mode != 4 and mode != 5 and mode !=6):
+
+                    while (mode != 1 and mode != 2 and mode != 3 and mode != 4 and mode != 5 and mode != 6):
                         if (rep >= 1):
                             print(
                                 "!!!!!!!!!!!!!!!!!!!! Invalid Entry !!!!!!!!!!!!!!!!!!")
@@ -305,6 +342,10 @@ while (True):
                                     inp_prodid = int(input())
 
                                     inp_prodquant = int(input())
+
+                                    prod_quant = inp_prodid
+                                    quant = inp_prodquant
+
                                     try:
                                         mycursor.execute(
                                             f"INSERT INTO Cart(Cart_Product_ID, Cart_Customer_ID, Cart_product_quantity) VALUES ({inp_prodid},{cust_id},{inp_prodquant})")
@@ -367,18 +408,23 @@ while (True):
                                                 ''')
                             myresult = mycursor.fetchall()
                             result_list = [
-                                ("Order ID","Order_Customer_ID" ,"Order_Product_ID","Total_Charges","Ordered_date")]
+                                ("Order ID", "Order_Customer_ID", "Order_Product_ID", "Total_Charges", "Ordered_date")]
                             result_list += [(" ", " ")]
                             result_list += [tuple(row) for row in myresult]
                             print(tabulate(result_list))
                             ord_id = int(
                                 input("Enter order ID you want to cancel order: "))
                             mycursor.execute(
-                                f"DELETE from delivery where delivery_order_id={ord_id}") 
+                                f"DELETE from delivery where delivery_order_id={ord_id}")
                             mycursor.execute(
                                 f"DELETE from final_order where order_id={ord_id}")
+                            mycursor.execute(
+                                f"UPDATE Product SET Product_Quantity =Product_Quantity+{quant}  WHERE Product_ID = {prod_quant}")
                             mydb.commit()
                             print("\nOrder Cancelled.\n")
+
+                            quant = 0
+                            prod_quant = 0
 
             elif (inp_signup_logintype == "Retailer"):
 
