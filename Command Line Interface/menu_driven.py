@@ -1,4 +1,5 @@
 import mysql.connector
+
 from datetime import date
 from tabulate import tabulate
 
@@ -39,12 +40,75 @@ while (True):
         mycursor.execute(
             f"INSERT INTO Login(Login_username,password,login_type) VALUES('{inp_signup_username}','{inp_signup_pass}','{inp_signup_logintype}')")
         mydb.commit()
-    elif(inp_home==4):
+        if (inp_signup_logintype == "Customer"):
+            print(
+                "------------------ You've Logged-IN as a Customer -------------------\n")
+            print("-> Enter your First Name:- ")
+            inp_customer_fn = input()
+            print("-> Enter your Last Name:- ")
+            inp_customer_ln = input()
+            print("-> Enter your Age:- ")
+            inp_customer_age = input()
+            print("-> Enter your Street name:- ")
+            inp_customer_street = int(input())
+            print("-> Enter your District name:- ")
+            inp_customer_distr = input()
+            print("-> Enter your State name:- ")
+            inp_customer_state = input()
+            print("-> Enter your PIN No.:- ")
+            inp_customer_pin = input()
+            print("-> Enter your Phone Number:- ")
+            inp_customer_phone = input()
+
+            mycursor.execute(
+                f"SELECT Login_ID FROM Login WHERE Login_username = '{inp_signup_username}' AND Password='{inp_signup_pass}' AND Login_Type='{inp_signup_logintype}'")
+
+            result = mycursor.fetchone()
+            if not result:
+                print("Account doesn't exist. Kindly SignUp first.")
+                continue
+            login_id = result[0]
+            mycursor.fetchall()
+
+            mycursor.execute(
+                f"INSERT INTO Customer(FirstName, LastName, Age, Street_Number, District, State, Pincode, Phone, CLogin_ID) VALUES('{inp_customer_fn}', '{inp_customer_ln}', {inp_customer_age}, {inp_customer_street}, '{inp_customer_distr}', '{inp_customer_state}', {inp_customer_pin}, {inp_customer_phone}, {login_id})"
+            )
+        elif (inp_signup_logintype == "Retailer"):
+            print(
+                "------------------ You've Logged-IN as a Retailer -------------------\n")
+            print(
+                ">>>>>>>>>>>>>>>>>> Kindly give the below details. <<<<<<<<<<<<<<<<<<<<<<\n")
+            print("-> Enter your First Name:- ")
+            inp_retailer_fn = input()
+            print("-> Enter your Last Name:- ")
+            inp_retailer_ln = input()
+            print("-> Enter your Age:- ")
+            inp_retailer_age = input()
+            print("-> Enter your Address:- ")
+            inp_retailer_addr = input()
+            print("-> Enter your Phone Number:- ")
+            inp_retailer_phone = input()
+            mycursor.execute(
+                f"SELECT Login_ID FROM Login WHERE Login_username = '{inp_signup_username}' AND Password='{inp_signup_pass}' AND Login_Type='{inp_signup_logintype}'")
+
+            result = mycursor.fetchone()
+            if not result:
+                print("Account doesn't exist. Kindly SignUp first.")
+                continue
+            login_id = result[0]
+            mycursor.fetchall()
+
+            mycursor.execute(
+                f"INSERT INTO Retailer(FirstName, LastName, Age, Address, Phone, RLogin_ID) VALUES('{inp_retailer_fn}', '{inp_retailer_ln}', {inp_retailer_age},'{inp_retailer_addr}', {inp_retailer_phone}, {login_id})"
+            )
+            mydb.commit()
+
+    elif (inp_home == 4):
         print("---------- Below is the Products List ---------")
         mycursor.execute("SELECT * FROM Product;")
         myresult = mycursor.fetchall()
         result_list = [("Product ID", "Product Category ID", "Product Price in $",
-                                            "Product Name", "Product Discount", "Product Quantity")]
+                        "Product Name", "Product Discount", "Product Quantity")]
         result_list += [(" ", " ", " ", " ", " ", " ")]
         result_list += [tuple(row) for row in myresult]
         print(tabulate(result_list))
@@ -163,29 +227,7 @@ while (True):
         exists = bool(result)
         if (exists):
             if (inp_signup_logintype == "Customer"):
-                print(
-                    "------------------ You've Logged-IN as a Customer -------------------\n")
-                print("-> Enter your First Name:- ")
-                inp_customer_fn = input()
-                print("-> Enter your Last Name:- ")
-                inp_customer_ln = input()
-                print("-> Enter your Age:- ")
-                inp_customer_age = input()
-                print("-> Enter your Street name:- ")
-                inp_customer_street = int(input())
-                print("-> Enter your District name:- ")
-                inp_customer_distr = input()
-                print("-> Enter your State name:- ")
-                inp_customer_state = input()
-                print("-> Enter your PIN No.:- ")
-                inp_customer_pin = input()
-                print("-> Enter your Phone Number:- ")
-                inp_customer_phone = input()
 
-                mycursor.execute(
-                    f"INSERT INTO Customer(FirstName, LastName, Age, Street_Number, District, State, Pincode, Phone, CLogin_ID) VALUES('{inp_customer_fn}', '{inp_customer_ln}', {inp_customer_age}, {inp_customer_street}, '{inp_customer_distr}', '{inp_customer_state}', {inp_customer_pin}, {inp_customer_phone}, {login_id})"
-                )
-                mydb.commit()
                 mode = 0
                 mycursor.execute(
                     f"SELECT Customer_ID FROM Customer WHERE cLogin_ID = {login_id}")
@@ -197,7 +239,7 @@ while (True):
                     print()
                     rep = 0
                     mode = 0
-                    while (mode != 1 and mode != 2 and mode != 3 and mode != 4 and mode!=5):
+                    while (mode != 1 and mode != 2 and mode != 3 and mode != 4 and mode != 5 and mode !=6):
                         if (rep >= 1):
                             print(
                                 "!!!!!!!!!!!!!!!!!!!! Invalid Entry !!!!!!!!!!!!!!!!!!")
@@ -209,6 +251,7 @@ while (True):
                         print("\tEnter 3 if you want to place the Order.\n")
                         print("\tEnter 4 if you want to check delivery details.\n")
                         print("\tEnter 5 if you want to see our minimum prices.\n")
+                        print("\tEnter 6 if you want to cancel your order.\n")
                         rep = rep+1
                         print("-> Enter:- ")
                         mode = int(input())
@@ -253,10 +296,11 @@ while (True):
                                     result_list += [tuple(row)
                                                     for row in myresult]
                                     print(tabulate(result_list))
+                                    break
 
                                 elif (op == 2):
                                     print(
-                                        "------------ Kindly Enter your Product_ID, Customer_ID and your Product Quantity. -----------")
+                                        "------------ Kindly Enter your Product_ID and your Product Quantity. -----------")
                                     global inp_prodid
                                     inp_prodid = int(input())
 
@@ -317,28 +361,26 @@ while (True):
                             result_list += [(" ", " ")]
                             result_list += [tuple(row) for row in myresult]
                             print(tabulate(result_list))
+                        elif (mode == 6):
+                            print("")
+                            mycursor.execute(f'''SELECT *FROM Final_Order WHERE Order_Customer_ID={cust_id}
+                                                ''')
+                            myresult = mycursor.fetchall()
+                            result_list = [
+                                ("Order ID","Order_Customer_ID" ,"Order_Product_ID","Total_Charges","Ordered_date")]
+                            result_list += [(" ", " ")]
+                            result_list += [tuple(row) for row in myresult]
+                            print(tabulate(result_list))
+                            ord_id = int(
+                                input("Enter order ID you want to cancel order: "))
+                            mycursor.execute(
+                                f"DELETE from delivery where delivery_order_id={ord_id}") 
+                            mycursor.execute(
+                                f"DELETE from final_order where order_id={ord_id}")
+                            mydb.commit()
+                            print("\nOrder Cancelled.\n")
 
             elif (inp_signup_logintype == "Retailer"):
-
-                print(
-                    "------------------ You've Logged-IN as a Retailer -------------------\n")
-                print(
-                    ">>>>>>>>>>>>>>>>>> Kindly give the below details. <<<<<<<<<<<<<<<<<<<<<<\n")
-                print("-> Enter your First Name:- ")
-                inp_retailer_fn = input()
-                print("-> Enter your Last Name:- ")
-                inp_retailer_ln = input()
-                print("-> Enter your Age:- ")
-                inp_retailer_age = input()
-                print("-> Enter your Address:- ")
-                inp_retailer_addr = input()
-                print("-> Enter your Phone Number:- ")
-                inp_retailer_phone = input()
-
-                mycursor.execute(
-                    f"INSERT INTO Retailer(FirstName, LastName, Age, Address, Phone, RLogin_ID) VALUES('{inp_retailer_fn}', '{inp_retailer_ln}', {inp_retailer_age},'{inp_retailer_addr}', {inp_retailer_phone}, {login_id})"
-                )
-                mydb.commit()
 
                 mycursor.execute(
                     f"SELECT Retailer_ID FROM Retailer WHERE RLogin_ID = {login_id}")
@@ -375,7 +417,7 @@ while (True):
 
                 elif (retailer == 2):
 
-                        mycursor.execute(f'''SELECT
+                    mycursor.execute(f'''SELECT
                                                 IF(GROUPING(c.state), 'All states', c.state) AS Orders_from,
                                                 IF(GROUPING(c.age), 'All Age Groups', CONCAT(FLOOR(c.age/10)*10, '-', FLOOR(c.age/10)*10+9)) AS Age_Group,
                                                 COUNT(c.customer_id) AS Number_Of_Orders
@@ -385,12 +427,12 @@ while (True):
                                                 WHERE s.store_retailer_id=2
                                                 GROUP BY c.state, c.age WITH ROLLUP;
                                                 ''')
-                        myresult = mycursor.fetchall()
-                        result_list = [
-                            ("orders From", "Age Group", "Number of Orders")]
-                        result_list += [(" ", " ", " ")]
-                        result_list += [tuple(row) for row in myresult]
-                        print(tabulate(result_list))
+                    myresult = mycursor.fetchall()
+                    result_list = [
+                        ("orders From", "Age Group", "Number of Orders")]
+                    result_list += [(" ", " ", " ")]
+                    result_list += [tuple(row) for row in myresult]
+                    print(tabulate(result_list))
 
             elif (inp_signup_logintype == "Delivery Person"):
 
