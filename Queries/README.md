@@ -1,4 +1,4 @@
-Some SQL Queries:- 
+# Some SQL Queries:- 
 
 
 1. Query for fetching product names for a particular retailer name, Id from the store.
@@ -42,6 +42,7 @@ SELECT R.Retailer_ID, CONCAT(R.FirstName, " " , R.LastName) AS Retailer_FullName
 SELECT Product_ID,Product_Name, Product_Price_in$ FROM Product WHERE Product_Price_in$> (SELECT AVG(Product_Price_in$) FROM Product);
 
 8. Query to calculate average of total order value for sum of all the orders by customer when their order count is greater than 2.
+
 SELECT ROUND(AVG(O.Order_Total),2) AS AverageOrderValue
 FROM ( SELECT C.Customer_ID, COUNT(*) AS OrderCount, ROUND(SUM(O.Total_Charges),2) AS Order_Total FROM Final_Order AS O LEFT JOIN Customer C ON O.Order_Customer_ID = C.Customer_ID GROUP BY C.Customer_ID) AS O WHERE OrderCount >= 2;
 
@@ -81,6 +82,7 @@ SELECT Retailer.FirstName,Retailer.Retailer_ID From Retailer WHERE EXISTS (SELEC
 SELECT C.FirstName, C.Phone From Customer C LEFT JOIN Final_Order o ON C.Customer_ID = o.Order_Customer_ID  WHERE o.Order_ID IS NULL;
 
 17. Query to List top 5 products and their total quantities sold.
+
 SELECT p.Product_name, COUNT(ol.Order_Product_ID) as total_quantity FROM Product p INNER JOIN Final_Order ol ON p.Product_ID = ol.Order_Product_ID GROUP BY p.Product_ID ORDER BY total_quantity DESC LIMIT 5;
 
 18. Query to return some of the states names from Customer and Delivery_person using LIKE.
@@ -96,7 +98,9 @@ ALTER TABLE Retailer ADD City varchar(100);
 SELECT DISTINCT Product_Name, COUNT(Product_Name) AS NumberOf, MIN(Product_Price_in$) AS Min_Price FROM Product WHERE Product_Price_in$ < (SELECT MAX(Product_Price_in$) FROM Product WHERE Product_Price_in$ NOT BETWEEN 3 AND 5 AND Product_Name NOT IN ('Television','Shoes','Dress')) AND  Product_Name LIKE '%s' GROUP BY Product_Name;
 
 21. Query to display delivery person’s name and ID, order’s total charges  from the table delivery.
+
 SELECT D.Delivery_Person_ID, Dp.FirstName AS DeliveryPerson_Name, O.Total_Charges FROM delivery AS D INNER JOIN Final_Order AS O ON D.Delivery_Order_ID=O.Order_ID INNER JOIN Delivery_Person AS Dp ON Dp.Delivery_Person_ID=D.Delivery_Person_ID;
 
 22. Use of self join to get product details of all except some which don’t satisfy a condition.
+
 SELECT DISTINCT p2.* FROM Product p1 JOIN Product p2 ON p1.Product_ID = p2.Product_ID WHERE p1.Product_Availability = 'YES' AND p2.Product_Category_ID != '4';
